@@ -30,7 +30,6 @@ def find_files(src: Path) -> Optional[list[Path]]:
 
 
 def nc2na(src: Path) -> None:
-    # >>> TODO : verifiy that these settings work for CLAMS files:
     ds = xr.load_dataset(src, decode_times=True, use_cftime=False)
     dst = src.parent / src.name.replace(".nc", ".na", 1)
 
@@ -50,11 +49,7 @@ def nc2na(src: Path) -> None:
     t0 = t_0.timestamp()
     seconds_after_midnight = time_unix_s - t0
 
-    # for v in ds.variables:
-    #     print(v, ds.variables[v].dims)
-
     vnames = [str(v) for v in ds.variables if v != TIME_KEY and ds.variables[v].dims[0] == TIME_KEY]
-    # <<< end TODO
 
     na = FFI1001()
 
@@ -67,7 +62,7 @@ def nc2na(src: Path) -> None:
     # NCOM is just a column header
     na.NCOM = [f"{TIME_KEY}{DATA_DELIMITER}" + DATA_DELIMITER.join(v for v in vnames)]
 
-    # NASA Ames is ASCII !! use '?' for non-printable chars
+    # NASA Ames is ASCII-encoded!! --> use '?' for non-printable chars
     na.SCOM = [s.encode("ascii", "replace").decode("ascii") for s in na.SCOM]
     na.NCOM = [s.encode("ascii", "replace").decode("ascii") for s in na.NCOM]
 
@@ -101,11 +96,6 @@ label1 = tk.Label(
 )
 canvas1.create_window(300, 100, window=label1)
 entry1 = tk.Entry(root)
-var1 = tk.IntVar()
-# check1 = tk.Checkbutton(
-#     root, text="CLAMS time?", variable=var1, onvalue=1, offvalue=0, height=5, width=20
-# )
-# canvas1.create_window(500, 150, window=check1)
 canvas1.create_window(300, 150, window=entry1, width=500)
 button1 = tk.Button(text="Convert netCDF to AMES !", command=convert)
 canvas1.create_window(300, 200, window=button1)
