@@ -1,5 +1,11 @@
 # nc2na
-convert simple netCDF files to NASA Ames format
+
+Convert simple netCDF files to NASA Ames format
 
 ## why?
-because we can. And to fool around with tkinter.
+
+Because we can. And to fool around with tkinter.
+
+## how?
+
+Using [xarray](https://docs.xarray.dev/en/stable/) and [pyfuppes.na1001](https://github.com/FObersteiner/pyFuppes/blob/master/pyfuppes/na1001.py).

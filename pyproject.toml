@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "nc2na"
+version = "0.0.1"
+description = "convert netCDF to NA"
+authors = ["Florian Obersteiner <f.obersteiner@kit.edu>"]
+license = "BSD"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">= 3.9, < 3.13"
+xarray = ">= 2022, >= 2023, >= 2024"
+pyfuppes = { git = "https://github.com/FObersteiner/pyFuppes.git", branch = "master" }
+
+[tool.poetry.dev-dependencies]
+#
+
+[tool.poetry.group.dev.dependencies]
+#
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff] # https://github.com/charliermarsh/ruff
+lint.ignore = ["E501"]             # use defaults otherwise
+lint.extend-select = ["C4", "SIM"]
+# "C4" : comprehensions
+# "TCH" : type checking optimizations
+# "SIM" : code simplifications
+target-version = "py39"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
