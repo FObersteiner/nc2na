@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">= 3.9, < 3.13"
 xarray = ">= 2022, >= 2023, >= 2024"
-pyfuppes = { git = "https://github.com/FObersteiner/pyFuppes.git", branch = "master" }
+numpy = ">= 1.18"
 
 [tool.poetry.dev-dependencies]
 #

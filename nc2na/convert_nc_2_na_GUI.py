@@ -4,9 +4,9 @@ import tkinter as tk
 from tkinter import messagebox
 from typing import Optional
 from datetime import datetime, timezone
-
-from pyfuppes.na1001 import FFI1001
 import xarray as xr
+
+from na_lib.na1001 import FFI1001
 
 # CONSTANTS
 # these are assumed to be the same for all files.
