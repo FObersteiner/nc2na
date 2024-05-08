@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import messagebox
 from typing import Optional
 from datetime import datetime, timezone
+
+import numpy as np
 import xarray as xr
 
 from na_lib.na1001 import FFI1001
@@ -22,10 +24,15 @@ def find_files(src: Path) -> Optional[list[Path]]:
     if not src.exists():
         messagebox.showerror("ERROR", f"path '{str(src)}' does not exist")
         return None
+        
+    if src.is_file():
+        return [src]
+        
     files = list(src.glob("*.nc"))
     if not files:
-        messagebox.showerror("ERROR", f"no nc files found in '{str(src)}'")
+        messagebox.showerror("ERROR", f"no '*.nc' files found in '{str(src)}'")
         return None
+        
     return files
 
 
@@ -36,10 +43,10 @@ def nc2na(src: Path) -> None:
     assert TIME_KEY in ds.variables, f"failed to find nc variable '{TIME_KEY}' in dataset"
     assert TIME_KEY in ds.dims, f"failed to find nc dimension '{TIME_KEY}' in dataset"
 
-    # values might be datetime or timedelta type; make sure we have Unix nanoseconds
     time_raw_ns = ds.variables[TIME_KEY].values
-    if not isinstance(time_raw_ns[0], int):  # type: ignore
-        time_raw_ns = time_raw_ns.astype(int)
+    # values might be datetime or timedelta type; make sure we have Unix nanoseconds
+    if not isinstance(time_raw_ns[0], (int, np.int64)):  # type: ignore
+        time_raw_ns = time_raw_ns.astype(np.int64)
 
     # convert to seconds after midnight
     time_unix_s = time_raw_ns / 1e9  # type: ignore
@@ -54,7 +61,7 @@ def nc2na(src: Path) -> None:
     na = FFI1001()
 
     na.DATE = (t_0.year, t_0.month, t_0.day)  # type: ignore
-    na.ONAME += ": nc 2 na converter"  # type: ignore
+    na.ONAME += ": nc 2 na converter, https://github.com/FObersteiner/nc2na"  # type: ignore
     na.XNAME = "seconds after midnight on DATE"  # type: ignore
 
     # all attributes that are just strings can be merged to into SCOM:
@@ -62,7 +69,7 @@ def nc2na(src: Path) -> None:
     # NCOM is just a column header
     na.NCOM = [f"{TIME_KEY}{DATA_DELIMITER}" + DATA_DELIMITER.join(v for v in vnames)]
 
-    # NASA Ames is ASCII-encoded!! --> use '?' for non-printable chars
+    # NASA Ames is ASCII-encoded!! --> use '?' for non-ASCII chars
     na.SCOM = [s.encode("ascii", "replace").decode("ascii") for s in na.SCOM]
     na.NCOM = [s.encode("ascii", "replace").decode("ascii") for s in na.NCOM]
 

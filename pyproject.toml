@@ -2,7 +2,7 @@
 name = "nc2na"
 version = "0.0.1"
 description = "convert netCDF to NA"
-authors = ["Florian Obersteiner <f.obersteiner@kit.edu>"]
+authors = ["Florian Obersteiner <f.obersteiner@posteo.de>"]
 license = "BSD"
 readme = "README.md"
 
@@ -13,7 +13,7 @@ numpy = ">= 1.18"
 netcdf4 = ">= 1.6"
 
 [tool.poetry.dev-dependencies]
-#
+pyinstaller = ">= 6.0"
 
 [tool.poetry.group.dev.dependencies]
 #
