@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-from pathlib import Path
 import tkinter as tk
-from tkinter import messagebox
-from typing import Optional
 from datetime import datetime, timezone
+from pathlib import Path
+from tkinter import filedialog, messagebox
+from typing import Optional
 
 import numpy as np
 import xarray as xr
-
 from na_lib.na1001 import FFI1001
 
 # CONSTANTS
@@ -15,7 +14,10 @@ from na_lib.na1001 import FFI1001
 # could make those variables (configuration) from the GUI.
 TIME_KEY = "time"
 DATA_DELIMITER = "\t"
-VSCAL, VMISS = "1", "nan"
+VSCAL, VMISS = (
+    "1",
+    "nan",
+)  # Note : VMISS will be adjusted if input is an integer array and specifies a missing_value
 FORMAT_DIRECITVE_IVAR = "g"  # time
 FORMAT_DIRECTIVE_VAR = "g"
 
@@ -123,6 +125,16 @@ def convert() -> None:
         nc2na(f)
 
 
+def file_dialog():
+    src = filedialog.askdirectory(
+        parent=root,
+        initialdir=Path().home(),
+        title="Select folder..",
+    )
+    entry1.delete(0, tk.END)
+    entry1.insert(0, src)
+
+
 if __name__ == "__main__":
     root = tk.Tk()
 
@@ -139,6 +151,9 @@ if __name__ == "__main__":
 
     entry1 = tk.Entry(root)
     canvas1.create_window(300, 150, window=entry1, width=500)
+
+    button0 = tk.Button(text="...", command=file_dialog)
+    canvas1.create_window(550, 150, window=button0)
 
     button1 = tk.Button(text="Convert netCDF to AMES !", command=convert)
     canvas1.create_window(300, 200, window=button1)
