@@ -21,23 +21,48 @@ FORMAT_DIRECTIVE_VAR = "g"
 
 
 def find_files(src: Path) -> Optional[list[Path]]:
+    """Input is directory with nc files or single nc file."""
     if not src.exists():
         messagebox.showerror("ERROR", f"path '{str(src)}' does not exist")
         return None
-        
+
     if src.is_file():
         return [src]
-        
+
     files = list(src.glob("*.nc"))
     if not files:
         messagebox.showerror("ERROR", f"no '*.nc' files found in '{str(src)}'")
         return None
-        
+
     return files
 
 
+def format_var(da: xr.DataArray) -> tuple[str, list[str]]:
+    """
+    Since input must not me masked or scaled, we need to apply that before
+    output to text.
+    """
+    _scale = da.attrs.get("scale", 1)
+    if not np.isclose(_scale, 1):
+        da.values *= _scale
+
+    # if vmiss is not specified, we have to short-cut...
+    _vmiss = da.attrs.get("missing_value") or da.attrs.get("_FillValue")
+    if _vmiss is None:
+        return (VMISS, [f"{v:{FORMAT_DIRECTIVE_VAR}}" for v in da.values])
+
+    # floating point arrays must have NaN set correctly
+    if isinstance(da.values[0], np.floating):
+        da.values[np.isclose(da.values, _vmiss)] = np.nan
+        return (VMISS, [f"{v:{FORMAT_DIRECTIVE_VAR}}" for v in da.values])
+
+    # otherwise, the type cannot represent NaN, so we need to return actual vmiss
+    return (str(_vmiss), [f"{v:{FORMAT_DIRECTIVE_VAR}}" for v in da.values])
+
+
 def nc2na(src: Path) -> None:
-    ds = xr.load_dataset(src, decode_times=True, use_cftime=False)
+    """Actual netCDF to NASA Ames format conversion."""
+    ds = xr.load_dataset(src, decode_times=True, use_cftime=False, mask_and_scale=False)
     dst = src.parent / src.name.replace(".nc", ".na", 1)
 
     assert TIME_KEY in ds.variables, f"failed to find nc variable '{TIME_KEY}' in dataset"
@@ -75,14 +100,20 @@ def nc2na(src: Path) -> None:
 
     na.VNAME = vnames
     na.VSCAL = [VSCAL for _ in vnames]
-    na.VMISS = [VMISS for _ in vnames]
     na.X = [f"{t:{FORMAT_DIRECITVE_IVAR}}" for t in seconds_after_midnight]
-    na.V = [[f"{v:{FORMAT_DIRECTIVE_VAR}}" for v in ds.variables[n]] for n in vnames]
+
+    na.VMISS = []
+    na.V = []
+    for n in vnames:
+        _vmiss, _data = format_var(ds[n])
+        na.VMISS.append(_vmiss)
+        na.V.append(_data)
 
     na.to_file(dst, sep_data=DATA_DELIMITER, overwrite=1)
 
 
 def convert() -> None:
+    """Wrapper around file finder and nc-2-na conversion."""
     src = Path(entry1.get())
     files = find_files(src)
     if not files:
@@ -92,19 +123,24 @@ def convert() -> None:
         nc2na(f)
 
 
-root = tk.Tk()
-canvas1 = tk.Canvas(root, width=600, height=300)
-canvas1.pack()
-label1 = tk.Label(
-    root,
-    text="Ordner mit NetCDF-Files (*.nc) angeben:",
-    fg="green",
-    font=("helvetica", 12, "bold"),
-)
-canvas1.create_window(300, 100, window=label1)
-entry1 = tk.Entry(root)
-canvas1.create_window(300, 150, window=entry1, width=500)
-button1 = tk.Button(text="Convert netCDF to AMES !", command=convert)
-canvas1.create_window(300, 200, window=button1)
+if __name__ == "__main__":
+    root = tk.Tk()
 
-root.mainloop()
+    canvas1 = tk.Canvas(root, width=600, height=300)
+    canvas1.pack()
+
+    label1 = tk.Label(
+        root,
+        text="Path to folder with netCDF-files (*.nc) or single nc file:",
+        fg="green",
+        font=("helvetica", 12, "bold"),
+    )
+    canvas1.create_window(300, 100, window=label1)
+
+    entry1 = tk.Entry(root)
+    canvas1.create_window(300, 150, window=entry1, width=500)
+
+    button1 = tk.Button(text="Convert netCDF to AMES !", command=convert)
+    canvas1.create_window(300, 200, window=button1)
+
+    root.mainloop()

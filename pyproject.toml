@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nc2na"
-version = "0.0.1"
+version = "0.0.4"
 description = "convert netCDF to NA"
 authors = ["Florian Obersteiner <f.obersteiner@posteo.de>"]
 license = "BSD"
