@@ -3,31 +3,25 @@ name = "nc2na"
 version = "0.0.4"
 description = "convert netCDF to NA"
 authors = ["Florian Obersteiner <f.obersteiner@posteo.de>"]
-license = "BSD"
+license = "GPLv3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">= 3.9, < 3.13"
-xarray = ">= 2022, >= 2023, >= 2024"
-numpy = ">= 1.18"
 netcdf4 = ">= 1.6"
+numpy = ">= 1.18"
+xarray = ">= 2022, >= 2023, >= 2024"
 
 [tool.poetry.dev-dependencies]
 pyinstaller = ">= 6.0"
-
-[tool.poetry.group.dev.dependencies]
-#
 
 [tool.black]
 line-length = 100
 target-version = ["py39", "py310", "py311", "py312"]
 
-[tool.ruff] # https://github.com/charliermarsh/ruff
-lint.ignore = ["E501"]             # use defaults otherwise
+[tool.ruff]
+lint.ignore = ["E501"]
 lint.extend-select = ["C4", "SIM"]
-# "C4" : comprehensions
-# "TCH" : type checking optimizations
-# "SIM" : code simplifications
 target-version = "py39"
 
 [build-system]
